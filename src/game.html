@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>TicTacToe</title>
+</head>
+
+<body class="flex items-center justify-center min-h-screen bg-[#6765fb]">
+
+    <div class="w-96 p-6 bg-white rounded-xl text-center shadow-lg relative"
+        style="box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.8);">
+        <span class="text-xl font-extrabold text-gray-800 mb-4">Let's Go...!</span>
+        <p id="status" class="font-extrabold text-base text-green-800 leading-6 mb-6">
+            Player X's turn
+        </p>
+
+        <!-- Tic Tac Toe Board -->
+        <div class="grid grid-cols-3 gap-2 w-full mx-auto">
+            <button class="cell w-20 h-20 bg-white border border-gray-800 rounded-lg text-4xl font-bold hover:bg-gray-100 focus:outline-none"
+                onclick="makeMove(this, 0)"></button>
+            <button class="cell w-20 h-20 bg-white border border-gray-800 rounded-lg text-4xl font-bold hover:bg-gray-100 focus:outline-none"
+                onclick="makeMove(this, 1)"></button>
+            <button class="cell w-20 h-20 bg-white border border-gray-800 rounded-lg text-4xl font-bold hover:bg-gray-100 focus:outline-none"
+                onclick="makeMove(this, 2)"></button>
+            <button class="cell w-20 h-20 bg-white border border-gray-800 rounded-lg text-4xl font-bold hover:bg-gray-100 focus:outline-none"
+                onclick="makeMove(this, 3)"></button>
+            <button class="cell w-20 h-20 bg-white border border-gray-800 rounded-lg text-4xl font-bold hover:bg-gray-100 focus:outline-none"
+                onclick="makeMove(this, 4)"></button>
+            <button class="cell w-20 h-20 bg-white border border-gray-800 rounded-lg text-4xl font-bold hover:bg-gray-100 focus:outline-none"
+                onclick="makeMove(this, 5)"></button>
+            <button class="cell w-20 h-20 bg-white border border-gray-800 rounded-lg text-4xl font-bold hover:bg-gray-100 focus:outline-none"
+                onclick="makeMove(this, 6)"></button>
+            <button class="cell w-20 h-20 bg-white border border-gray-800 rounded-lg text-4xl font-bold hover:bg-gray-100 focus:outline-none"
+                onclick="makeMove(this, 7)"></button>
+            <button class="cell w-20 h-20 bg-white border border-gray-800 rounded-lg text-4xl font-bold hover:bg-gray-100 focus:outline-none"
+                onclick="makeMove(this, 8)"></button>
+        </div>
+
+        <!-- Reset Button -->
+        <button
+            class="mt-2 px-10 py-3 text-white font-bold text-lg rounded-full shadow-lg transition-transform transform bg-[#6765fb] rounded-2 border-md border-white-800 hover:scale-105 hover:border-[#6765fb] hover:shadow-[#6765fb] hover:shadow-lg focus:outline-none"
+            onclick="resetBoard()">Reset</button>
+    </div>
+
+    <script>
+        let currentPlayer = 'X';
+        let board = Array(9).fill(null); // Represents the board state
+        const winningCombinations = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+        let gameOver = false;
+
+        function makeMove(cell, index) {
+            if (board[index] || gameOver) return; // Ignore if cell is already filled or game is over
+
+            board[index] = currentPlayer;
+            cell.textContent = currentPlayer;
+
+            if (checkWinner()) {
+                document.getElementById("status").textContent = `Player ${currentPlayer} wins!`;
+                gameOver = true;
+            } else if (board.every(cell => cell)) {
+                document.getElementById("status").textContent = "It's a draw!";
+                gameOver = true;
+            } else {
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                document.getElementById("status").textContent = `Player ${currentPlayer}'s turn`;
+            }
+        }
+
+        function checkWinner() {
+            return winningCombinations.some(combination => {
+                return combination.every(index => board[index] === currentPlayer);
+            });
+        }
+
+        function resetBoard() {
+            board = Array(9).fill(null);
+            currentPlayer = 'X';
+            gameOver = false;
+            document.getElementById("status").textContent = "Player X's turn";
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.textContent = '';
+            });
+        }
+    </script>
+
+</body>
+
+</html>

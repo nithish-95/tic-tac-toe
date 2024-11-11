@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>TicTacToe</title>
+    <script>
+        function goToGamePage() {
+            const nameInput = document.getElementById("nameInput").value.trim();
+            if (nameInput) {
+                // Navigate to game.html with the name as a query parameter
+                window.location.href = `/game.html?name=${encodeURIComponent(nameInput)}`;
+            } else {
+                alert("Please enter your name.");
+            }
+        }
+    </script>
+</head>
+
+<body class="flex items-center justify-center min-h-screen bg-[#6765fb]">
+
+    <div class="w-80 p-6 bg-white rounded-xl text-center shadow-lg relative"
+        style="box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.8);">
+        <span class="text-xl font-extrabold text-gray-800">Welcome!</span>
+        <p class="text-base text-gray-800 leading-6">
+            Let's get started, enter your name.
+        </p>
+        <div class="flex flex-col gap-3 w-full">
+            <input id="nameInput" type="text" placeholder="Your Name"
+                class="mt-2 outline-none bg-white border border-gray-800 rounded-lg px-4 py-3 hover:border-[#6765fb] hover:shadow-[#6765fb] hover:shadow-lg focus:outline-none text-sm text-gray-800" />
+            <button aria-label="Start Game"
+                class="mt-2 px-10 py-3 text-green font-bold text-lg rounded-full shadow-lg transition-transform transform bg-transparent rounded-2 border border-gray-800 hover:scale-105 hover:border-[#6765fb] hover:shadow-[#6765fb] hover:shadow-lg focus:outline-none"
+                id="startButton" onclick="goToGamePage()">
+                Let's GO....!!!
+            </button>
+        </div>
+    </div>
+
+</body>
+<footer></footer>
+
+</html>
