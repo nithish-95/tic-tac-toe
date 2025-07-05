@@ -5,40 +5,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <title>TicTacToe</title>
-    <script>
-        function goToGamePage() {
-            const nameInput = document.getElementById("nameInput").value.trim();
-            if (nameInput) {
-                // Navigate to game.html with the name as a query parameter
-                window.location.href = `/game.html?name=${encodeURIComponent(nameInput)}`;
-            } else {
-                alert("Please enter your name.");
-            }
-        }
-    </script>
+    <title>TicTacToe - Lobby</title>
 </head>
 
 <body class="flex items-center justify-center min-h-screen bg-[#6765fb]">
 
-    <div class="w-80 p-6 bg-white rounded-xl text-center shadow-lg relative"
+    <div id="lobby" class="w-80 p-6 bg-white rounded-xl text-center shadow-lg relative"
         style="box-shadow: 8px 8px 0px rgba(0, 0, 0, 0.8);">
         <span class="text-xl font-extrabold text-gray-800">Welcome!</span>
-        <p class="text-base text-gray-800 leading-6">
-            Let's get started, enter your name.
-        </p>
-        <div class="flex flex-col gap-3 w-full">
-            <input id="nameInput" type="text" placeholder="Your Name"
-                class="mt-2 outline-none bg-white border border-gray-800 rounded-lg px-4 py-3 hover:border-[#6765fb] hover:shadow-[#6765fb] hover:shadow-lg focus:outline-none text-sm text-gray-800" />
-            <button aria-label="Start Game"
-                class="mt-2 px-10 py-3 text-green font-bold text-lg rounded-full shadow-lg transition-transform transform bg-transparent rounded-2 border border-gray-800 hover:scale-105 hover:border-[#6765fb] hover:shadow-[#6765fb] hover:shadow-lg focus:outline-none"
-                id="startButton" onclick="goToGamePage()">
-                Let's GO....!!!
+        <div id="nameSection" class="flex flex-col gap-3 w-full mt-4">
+            <input id="nameInput" type="text" placeholder="Enter Your Name"
+                class="outline-none bg-white border border-gray-800 rounded-lg px-4 py-3 hover:border-[#6765fb] hover:shadow-[#6765fb] hover:shadow-lg focus:outline-none text-sm text-gray-800" />
+            <button aria-label="Continue"
+                class="px-10 py-3 text-green font-bold text-lg rounded-full shadow-lg transition-transform transform bg-transparent rounded-2 border border-gray-800 hover:scale-105 hover:border-[#6765fb] hover:shadow-[#6765fb] hover:shadow-lg focus:outline-none"
+                onclick="enterLobby()">
+                Continue
             </button>
+        </div>
+
+        <div id="gameOptions" class="hidden flex-col gap-3 w-full mt-4">
+            <button aria-label="Create Game"
+                class="px-10 py-3 text-green font-bold text-lg rounded-full shadow-lg transition-transform transform bg-transparent rounded-2 border border-gray-800 hover:scale-105 hover:border-[#6765fb] hover:shadow-[#6765fb] hover:shadow-lg focus:outline-none"
+                onclick="createGame()">
+                Create Game
+            </button>
+            <div class="flex flex-col gap-3 w-full mt-4">
+                <input id="gameIDInput" type="text" placeholder="Enter Game Code"
+                    class="outline-none bg-white border border-gray-800 rounded-lg px-4 py-3 hover:border-[#6765fb] hover:shadow-[#6765fb] hover:shadow-lg focus:outline-none text-sm text-gray-800" />
+                <button aria-label="Join Game"
+                    class="px-10 py-3 text-green font-bold text-lg rounded-full shadow-lg transition-transform transform bg-transparent rounded-2 border border-gray-800 hover:scale-105 hover:border-[#6765fb] hover:shadow-[#6765fb] hover:shadow-lg focus:outline-none"
+                    onclick="joinGame()">
+                    Join Game
+                </button>
+            </div>
         </div>
     </div>
 
+    <script>
+        let playerName = "";
+
+        function enterLobby() {
+            playerName = document.getElementById("nameInput").value.trim();
+            if (!playerName) {
+                alert("Please enter your name.");
+                return;
+            }
+            document.getElementById("nameSection").classList.add("hidden");
+            document.getElementById("gameOptions").classList.remove("hidden");
+        }
+
+        function createGame() {
+            const formData = new FormData();
+            formData.append("name", playerName);
+
+            fetch("/create", { method: "POST", body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    window.location.href = `/game/${data.gameID}`;
+                });
+        }
+
+        function joinGame() {
+            const gameID = document.getElementById("gameIDInput").value.trim();
+            if (!gameID) {
+                alert("Please enter a game code.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("name", playerName);
+            formData.append("gameID", gameID);
+
+            fetch("/join", { method: "POST", body: formData })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error("Game not found or is full.");
+                    }
+                })
+                .then(data => {
+                    window.location.href = `/game/${data.gameID}`;
+                })
+                .catch(error => {
+                    alert(error.message);
+                });
+        }
+    </script>
+
 </body>
-<footer></footer>
 
 </html>
