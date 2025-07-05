@@ -139,6 +139,13 @@ func handleConnect(s *melody.Session) {
 	mu.Lock()
 	defer mu.Unlock()
 
+	log.Printf("New connection from %s", s.Request.RemoteAddr)
+	for name, values := range s.Request.Header {
+		for _, value := range values {
+			log.Printf("Header: %s = %s", name, value)
+		}
+	}
+
 	gameID := chi.URLParam(s.Request, "gameID")
 	if _, ok := games[gameID]; !ok {
 		s.Close()
@@ -147,7 +154,7 @@ func handleConnect(s *melody.Session) {
 
 	if len(players[gameID]) >= 2 {
 		s.Close()
-		return
+		return	
 	}
 
 	var playerSymbol string

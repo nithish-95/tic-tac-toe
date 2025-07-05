@@ -24,6 +24,7 @@ WORKDIR /app
 # Copy the binary and HTML files from the builder
 COPY --from=builder /app/bin/tictac /app/bin/tictac
 COPY --from=builder /app/src /app/src
+COPY --from=builder /app/assets /app/assets
 
 # Adjust permissions
 RUN chown -R appuser:appgroup /app
