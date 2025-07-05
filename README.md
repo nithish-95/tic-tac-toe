@@ -1,6 +1,6 @@
 # Tic-Tac-Toe Application Deployment on AWS Fargate
 
-This README details the process of deploying the Tic-Tac-Toe Go web application to AWS Fargate, including Dockerization, ECS infrastructure setup, and custom domain configuration using Route 53.
+This README details the process of deploying the Tic-Tac-Toe Go web application (with Websockets) to AWS Fargate, including Dockerization, ECS infrastructure setup, and custom domain configuration using Route 53.
 
 ## Goal
 
