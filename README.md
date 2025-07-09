@@ -226,3 +226,126 @@ Finally, AWS Route 53 was configured to point the custom domain (`tic-tac-toe.ni
     ```
 
 Once DNS propagation is complete, your Tic-Tac-Toe application will be accessible via `tic-tac-toe.nithish.net`.
+
+## Operating the Deployed Service
+
+This section provides instructions on how to manage your deployed Tic-Tac-Toe application on AWS Fargate, including starting, stopping, and cleaning up resources to manage costs.
+
+### Starting and Stopping the Application
+
+Your application runs on AWS Fargate as an ECS service. To manage its running state, you can adjust the desired count of tasks for the service.
+
+*   **To Stop the Application (reduce Fargate costs):**
+    This command scales down the desired number of tasks for your ECS service to `0`. This will stop any running Fargate tasks and immediately reduce your Fargate compute costs. Note that the Application Load Balancer (ALB) will continue to incur costs even when the service is stopped.
+    ```bash
+    aws ecs update-service --cluster tic-tac-toe --service tic-tac-toe-service --desired-count 0 --region us-east-1
+    ```
+
+*   **To Start the Application:**
+    This command scales up the desired number of tasks for your ECS service to `1` (or more, if you need multiple instances). This will cause ECS to launch new Fargate tasks and make your application accessible again via the ALB.
+    ```bash
+    aws ecs update-service --cluster tic-tac-toe --service tic-tac-toe-service --desired-count 1 --region us-east-1
+    ```
+
+### Managing Costs and Cleaning Up Resources
+
+To completely stop incurring costs or to remove the application from your AWS account, you need to delete the associated AWS resources. **Be cautious when deleting resources, as this action is irreversible.**
+
+1.  **Stop the ECS Service:** (as described above)
+    ```bash
+    aws ecs update-service --cluster tic-tac-toe --service tic-tac-toe-service --desired-count 0 --region us-east-1
+    ```
+
+2.  **Delete the ECS Service:**
+    This removes the service definition from ECS. Ensure the desired count is `0` before deleting.
+    ```bash
+    aws ecs delete-service --cluster tic-tac-toe --service tic-tac-toe-service --force --region us-east-1
+    ```
+
+3.  **Delete the Application Load Balancer (ALB) and its components:**
+    This will stop all costs associated with the public endpoint. You need to delete the listener, target group, and then the load balancer itself.
+    *   **Get Listener ARN:**
+        ```bash
+        aws elbv2 describe-listeners --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:207888179522:loadbalancer/app/tic-tac-toe-lb/baf375c968a15bd8 --query 'Listeners[0].ListenerArn' --output text --region us-east-1
+        ```
+    *   **Delete Listener:**
+        ```bash
+        aws elbv2 delete-listener --listener-arn <listener-arn> --region us-east-1
+        ```
+    *   **Delete Target Group:**
+        ```bash
+        aws elbv2 delete-target-group --target-group-arn arn:aws:elasticloadbalancing:us-east-1:207888179522:targetgroup/tic-tac-toe-tg/88ed1bd8265af0af --region us-east-1
+        ```
+    *   **Delete Load Balancer:**
+        ```bash
+        aws elbv2 delete-load-balancer --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:207888179522:loadbalancer/app/tic-tac-toe-lb/baf375c968a15bd8 --region us-east-1
+        ```
+    *   **Delete ALB Security Group:**
+        ```bash
+        aws ec2 delete-security-group --group-id sg-0a2388e4d16dae4ba --region us-east-1
+        ```
+
+4.  **Delete the ECS Cluster:**
+    ```bash
+    aws ecs delete-cluster --cluster tic-tac-toe --region us-east-1
+    ```
+
+5.  **Deregister Task Definitions:**
+    You should deregister all revisions of your task definition.
+    *   **List Task Definition Revisions:**
+        ```bash
+        aws ecs list-task-definitions --family-prefix tic-tac-toe --query 'taskDefinitionArns' --output text --region us-east-1
+        ```
+    *   **Deregister Each Revision (replace with actual ARNs):**
+        ```bash
+        aws ecs deregister-task-definition --task-definition <task-definition-arn> --region us-east-1
+        ```
+
+6.  **Delete IAM Roles:**
+    Delete the IAM roles created for ECS tasks.
+    *   **Detach policies and delete `ecsTaskExecutionRole`:**
+        ```bash
+        aws iam detach-role-policy --role-name ecsTaskExecutionRole --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy --region us-east-1
+        aws iam delete-role --role-name ecsTaskExecutionRole --region us-east-1
+        ```
+    *   **Delete `ecsTaskRole`:**
+        ```bash
+        aws iam delete-role --role-name ecsTaskRole --region us-east-1
+        ```
+
+7.  **Delete ECR Repository:**
+    This will delete your Docker image. Ensure you have no other images you want to keep in this repository.
+    ```bash
+    aws ecr delete-repository --repository-name tic-tac-toe --force --region us-east-1
+    ```
+
+8.  **Delete Route 53 Record Set and Hosted Zone (if applicable):**
+    *   **Delete Record Set:** You would need to create a `change-batch.json` with `"Action": "DELETE"` for the record set we created.
+        ```json
+        {
+          "Changes": [
+            {
+              "Action": "DELETE",
+              "ResourceRecordSet": {
+                "Name": "tic-tac-toe.nithish.net",
+                "Type": "A",
+                "AliasTarget": {
+                  "HostedZoneId": "Z35SXDOTRQ7X7K",
+                  "DNSName": "tic-tac-toe-lb-813944911.us-east-1.elb.amazonaws.com",
+                  "EvaluateTargetHealth": false
+                }
+              }
+            }
+          ]
+        }
+        ```
+        Then execute:
+        ```bash
+        aws route53 change-resource-record-sets --hosted-zone-id Z00518181OKPN6XT40XPL --change-batch file://change-batch.json --region us-east-1
+        ```
+    *   **Delete Hosted Zone (only if you created the hosted zone specifically for this app and it has no other records):**
+        ```bash
+        aws route53 delete-hosted-zone --id Z00518181OKPN6XT40XPL --region us-east-1
+        ```
+
+By following these steps, you can manage the operational state and costs of your deployed application, and completely clean up all associated AWS resources when no longer needed.

@@ -1,0 +1,92 @@
+{
+  "pipeline": {
+    "name": "tic-tac-toe-pipeline",
+    "roleArn": "arn:aws:iam::207888179522:role/CodePipelineServiceRole",
+    "artifactStore": {
+      "type": "S3",
+      "location": "codepipeline-us-east-1-207888179522"
+    },
+    "stages": [
+      {
+        "name": "Source",
+        "actions": [
+          {
+            "name": "Source",
+            "actionTypeId": {
+              "category": "Source",
+              "owner": "ThirdParty",
+              "provider": "GitHub",
+              "version": "1"
+            },
+            "outputArtifacts": [
+              {
+                "name": "SourceArtifact"
+              }
+            ],
+            "configuration": {
+              "Owner": "nithish-95",
+              "Repo": "tic-tac-toe",
+              "Branch": "Hosted",
+              "PollForSourceChanges": "true",
+              "OAuthToken": "REPLACE_WITH_A_SECURE_AUTHENTICATION_METHOD_LIKE_CODESTAR_CONNECTIONS"
+            },
+            "runOrder": 1
+          }
+        ]
+      },
+      {
+        "name": "Build",
+        "actions": [
+          {
+            "name": "Build",
+            "actionTypeId": {
+              "category": "Build",
+              "owner": "AWS",
+              "provider": "CodeBuild",
+              "version": "1"
+            },
+            "inputArtifacts": [
+              {
+                "name": "SourceArtifact"
+              }
+            ],
+            "outputArtifacts": [
+              {
+                "name": "BuildArtifact"
+              }
+            ],
+            "configuration": {
+              "ProjectName": "tic-tac-toe-build"
+            },
+            "runOrder": 1
+          }
+        ]
+      },
+      {
+        "name": "Deploy",
+        "actions": [
+          {
+            "name": "Deploy",
+            "actionTypeId": {
+              "category": "Deploy",
+              "owner": "AWS",
+              "provider": "ECS",
+              "version": "1"
+            },
+            "inputArtifacts": [
+              {
+                "name": "BuildArtifact"
+              }
+            ],
+            "configuration": {
+              "ClusterName": "tic-tac-toe",
+              "ServiceName": "tic-tac-toe-service",
+              "FileName": "imagedefinitions.json"
+            },
+            "runOrder": 1
+          }
+        ]
+      }
+    ]
+  }
+}

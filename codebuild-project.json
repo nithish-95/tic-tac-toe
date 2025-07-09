@@ -1,0 +1,33 @@
+{
+  "name": "tic-tac-toe-build",
+  "description": "Build project for Tic-Tac-Toe Fargate app",
+  "serviceRole": "arn:aws:iam::207888179522:role/CodeBuildServiceRole",
+  "source": {
+    "type": "GITHUB",
+    "location": "https://github.com/nithish-95/tic-tac-toe.git",
+    "reportBuildStatus": true
+  },
+  "artifacts": {
+    "type": "NO_ARTIFACTS"
+  },
+  "environment": {
+    "type": "LINUX_CONTAINER",
+    "image": "aws/codebuild/standard:5.0",
+    "computeType": "BUILD_GENERAL1_SMALL",
+    "privilegedMode": true,
+    "environmentVariables": [
+      {
+        "name": "AWS_ACCOUNT_ID",
+        "value": "207888179522"
+      },
+      {
+        "name": "AWS_DEFAULT_REGION",
+        "value": "us-east-1"
+      },
+      {
+        "name": "IMAGE_REPO_URI",
+        "value": "207888179522.dkr.ecr.us-east-1.amazonaws.com/tic-tac-toe"
+      }
+    ]
+  }
+}
